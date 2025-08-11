@@ -11,9 +11,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
     $fileName = basename($_FILES['file']['name']);
     $targetFile = $uploadDir . '/' . $fileName;
     if (move_uploaded_file($_FILES['file']['tmp_name'], $targetFile)) {
-        echo "<p style='color:green;'>File uploaded successfully!</p>";
+        echo "<p class='success'>File uploaded successfully!</p>";
     } else {
-        echo "<p style='color:red;'>Upload failed.</p>";
+        echo "<p class='error'>Upload failed.</p>";
     }
 }
 
@@ -22,7 +22,7 @@ if (isset($_GET['delete'])) {
     $fileToDelete = $uploadDir . '/' . basename($_GET['delete']);
     if (file_exists($fileToDelete)) {
         unlink($fileToDelete);
-        echo "<p style='color:red;'>File deleted!</p>";
+        echo "<p class='error'>File deleted!</p>";
     }
 }
 
@@ -32,14 +32,9 @@ $files = array_diff(scandir($uploadDir), ['.', '..']);
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>PHP File Manager</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background: #f4f4f4; }
-        input[type="text"] { padding: 5px; width: 300px; }
-    </style>
+    <link rel="stylesheet" href="styles.css">
     <script>
         function searchFiles() {
             let filter = document.getElementById("search").value.toLowerCase();
@@ -52,35 +47,49 @@ $files = array_diff(scandir($uploadDir), ['.', '..']);
     </script>
 </head>
 <body>
-    <h1>📂 PHP File Manager</h1>
+<div class="container">
 
-    <form action="" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" required>
-        <button type="submit">Upload</button>
-    </form>
+    <div class="header">
+        <h1>📂 PHP File Manager</h1>
+        <div class="subtitle">Upload, search, download & delete — no database required</div>
+    </div>
 
-    <h3>Search Files</h3>
-    <input type="text" id="search" onkeyup="searchFiles()" placeholder="Type to search...">
+    <div class="card">
+        <form class="upload-row" action="" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" required>
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
+        <div class="search-wrap">
+            <input type="text" id="search" class="search-input" onkeyup="searchFiles()" placeholder="Type to search...">
+        </div>
+    </div>
 
-    <h3>Uploaded Files</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>File Name</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        <?php foreach ($files as $file): ?>
-            <tr>
-                <td><?= htmlspecialchars($file) ?></td>
-                <td>
-                    <a href="uploads/<?= urlencode($file) ?>" download>Download</a> | 
-                    <a href="?delete=<?= urlencode($file) ?>" onclick="return confirm('Delete this file?')">Delete</a>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
+    <div class="card">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>File Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php if (count($files) === 0): ?>
+                <tr><td colspan="2" class="empty">No files uploaded yet</td></tr>
+            <?php else: ?>
+                <?php foreach ($files as $file): ?>
+                    <tr>
+                        <td class="file-name"><?= htmlspecialchars($file) ?></td>
+                        <td class="actions">
+                            <a href="uploads/<?= urlencode($file) ?>" class="download" download>Download</a>
+                            <a href="?delete=<?= urlencode($file) ?>" class="delete" onclick="return confirm('Delete this file?')">Delete</a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+
+</div>
 </body>
 </html>
